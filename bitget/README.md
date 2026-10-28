@@ -105,3 +105,32 @@ Bitget error `40084` means the supplied account is in Classic Account mode and
 the requested API requires Unified Account access. Resolve account eligibility
 and Stock+ permissions in Bitget, then run the check and start commands above.
 Changing the local `account_type` cannot resolve this server-side rejection.
+
+## Start manually with nohup
+
+Install `requirements.txt` in the repository's `.venv` and prepare
+`~/bitget-configs/config.json` with the account routing, Kafka settings, permanent
+`journal_account`, and credential environment references described above. Keep
+the credentials in `~/bitget-configs/config.properties`.
+
+Run the launcher from any working directory:
+
+```bash
+~/broker-api-scripts/bitget/start-live.sh
+```
+
+The launcher locates the repository relative to itself and checks for an existing
+worker. It runs the read-only startup checks with a 180-second timeout; a failed
+check stops the launch. Once those checks pass, it sets
+`brokers.bitget.trading_enabled` to `true` in the private configuration and starts
+`bitget/start.py --execute` in the background using `nohup`, with stdin detached.
+Output is appended to `~/bitget-configs/bitget.log`, and the process ID is saved
+in `~/bitget-configs/bitget.pid`. The initial process check confirms that the
+worker has survived three seconds; inspect its health record for runtime status:
+
+```bash
+~/broker-api-scripts/.venv/bin/python ~/broker-api-scripts/tools/runner_control.py status --broker bitget
+tail -n 50 ~/bitget-configs/bitget.log
+# To stop after the current operation:
+~/broker-api-scripts/.venv/bin/python ~/broker-api-scripts/tools/runner_control.py stop --broker bitget
+```
