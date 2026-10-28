@@ -8,6 +8,7 @@ import json
 import pytest
 
 from bitget.adapter import Adapter, PREFIX
+from common.commands import normalize
 from common.errors import BrokerError, ConfigurationError, OutcomeUnknown, UnsupportedOrder
 
 
@@ -33,7 +34,7 @@ def order(identity="001", **changes):
 def test_limit_stock_payload_preserves_shares_and_correlation():
     result = Adapter({}).build_order(command())
     assert result == {"symbol": "AAPL.US", "side": "Buy", "orderType": "LO", "submittedQuantity": "0.125",
-                      "timeInForce": "Day", "outsideRth": "RTHOnly", "submittedPrice": "190.5",
+                      "timeInForce": "Day", "outsideRth": "AnyTime", "submittedPrice": "190.5",
                       "remark": "cmd:" + hashlib.sha256(b"bg-stock-1").hexdigest()[:60]}
     assert len(result["remark"]) == 64
     assert "clientOid" not in result
@@ -44,6 +45,7 @@ def test_limit_stock_payload_preserves_shares_and_correlation():
 def test_market_orders_use_share_quantity(side):
     result = Adapter({}).build_order(command(side=side, order_type="market", limit_price=None, quantity="3"))
     assert result["submittedQuantity"] == "3" and result["orderType"] == "MO"
+    assert result["outsideRth"] == "AnyTime"
     assert "submittedPrice" not in result
 
 
@@ -81,27 +83,64 @@ def test_extended_limit_and_gtd_validation():
     with pytest.raises(UnsupportedOrder):
         adapter.build_order(command(options={"expire_date": "2026-11-01"}))
     with pytest.raises(UnsupportedOrder):
-        adapter.build_order(command(order_type="market", limit_price=None, options={"extended_hours": True}))
-    with pytest.raises(UnsupportedOrder):
         adapter.build_order(command(options={"outside_rth": "RTHOnly", "extended_hours": True}))
 
 
-def test_signed_post_uses_exact_transmitted_json_body_after_stock_preflight():
+@pytest.mark.parametrize("kind", ["market", "limit"])
+@pytest.mark.parametrize("options,expected", [
+    ({}, "AnyTime"),
+    ({"extended_hours": True}, "AnyTime"),
+    ({"outside_rth": "ANY_TIME"}, "AnyTime"),
+    ({"extended_hours": False}, "RTHOnly"),
+    ({"outside_rth": "RTHOnly"}, "RTHOnly"),
+    ({"outside_rth": "OVERNIGHT"}, "Overnight"),
+])
+def test_signed_post_preserves_order_type_and_session_after_normalization(kind, options, expected):
     adapter = Adapter({"api_key": "test-key", "api_secret": "test-secret", "passphrase": "test-pass"})
     static = Mock(status_code=200)
     static.json.return_value = {"code": "00000", "data": instrument()}
     response = Mock(status_code=200)
     response.json.return_value = {"code": "00000", "data": {"orderId": "123", "symbol": "AAPL.US"}}
     with patch("requests.request", side_effect=[static, response]) as request, patch("time.time_ns", return_value=1234000000):
-        adapter.place_order(command())
+        payload = command(order_type=kind, options=options)
+        if kind == "market":
+            del payload["limit_price"]
+        adapter.place_order(normalize(payload, "bitget", {}))
     assert request.call_count == 2
     args, kwargs = request.call_args
     assert args == ("POST", "https://api.bitget.com" + PREFIX + "/trade/place-order")
     signed = ("1234POST" + PREFIX + "/trade/place-order" + kwargs["data"]).encode()
-    expected = base64.b64encode(hmac.new(b"test-secret", signed, hashlib.sha256).digest()).decode()
-    assert kwargs["headers"]["ACCESS-SIGN"] == expected
-    assert json.loads(kwargs["data"])["submittedQuantity"] == "0.125"
+    expected_signature = base64.b64encode(hmac.new(b"test-secret", signed, hashlib.sha256).digest()).decode()
+    assert kwargs["headers"]["ACCESS-SIGN"] == expected_signature
+    body = json.loads(kwargs["data"])
+    assert body["submittedQuantity"] == "0.125"
+    assert body["outsideRth"] == expected
+    assert body["orderType"] == ("MO" if kind == "market" else "LO")
+    if kind == "market":
+        assert "submittedPrice" not in body
+    else:
+        assert body["submittedPrice"] == "190.5"
     assert kwargs["allow_redirects"] is False
+
+
+def test_luld_order_keeps_regular_session_default():
+    payload = normalize(command(auction_intent="luld_reopening"), "bitget", {})
+    assert Adapter({}).build_order(payload)["outsideRth"] == "RTHOnly"
+    with pytest.raises(UnsupportedOrder, match="LULD intent requires regular trading hours"):
+        Adapter({}).build_order({**payload, "options": {"outside_rth": "AnyTime"}})
+
+
+def test_extended_market_broker_rejection_is_reported_without_retry_or_conversion():
+    adapter = Adapter({"api_key": "key", "api_secret": "secret", "passphrase": "pass"})
+    adapter._stock_instrument = Mock(return_value=instrument()["list"][0])
+    response = Mock(status_code=200)
+    response.json.return_value = {"code": "TEST_REJECTED", "msg": "Order type unavailable in this session"}
+    with patch("requests.request", return_value=response) as request:
+        with pytest.raises(BrokerError, match="Order type unavailable in this session"):
+            adapter.place_order(command(order_type="market", limit_price=None))
+    assert request.call_count == 1
+    body = json.loads(request.call_args.kwargs["data"])
+    assert body["orderType"] == "MO" and body["outsideRth"] == "AnyTime"
 
 
 def test_get_signature_includes_exact_encoded_query():

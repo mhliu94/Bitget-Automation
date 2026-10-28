@@ -77,7 +77,7 @@ class Adapter:
             raise UnsupportedOrder("Bitget Stock+ requires buy/sell and market/limit")
         if tif not in {"day", "gtc", "gtd"}:
             raise UnsupportedOrder("Bitget Stock+ supports DAY/GTC/GTD; native FOK and IOC are not documented")
-        outside = options.get("outside_rth", "RTHOnly")
+        outside = options.get("outside_rth", "RTHOnly" if command.get("auction_intent") else "AnyTime")
         outside = {"RTH_ONLY": "RTHOnly", "ANY_TIME": "AnyTime", "OVERNIGHT": "Overnight"}.get(outside, outside)
         if "extended_hours" in options:
             if type(options["extended_hours"]) is not bool:
@@ -88,8 +88,6 @@ class Adapter:
             outside = mapped
         if outside not in {"RTHOnly", "AnyTime", "Overnight"}:
             raise UnsupportedOrder("Invalid Stock+ outside_rth")
-        if kind == "market" and outside != "RTHOnly":
-            raise UnsupportedOrder("Use a limit order outside regular trading hours")
         if command.get("auction_intent") and outside != "RTHOnly":
             raise UnsupportedOrder("LULD intent requires regular trading hours")
         order = {"symbol": self.stock_symbol(command.get("symbol")), "side": "Buy" if side == "buy" else "Sell",
