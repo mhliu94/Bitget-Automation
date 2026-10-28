@@ -1,0 +1,14 @@
+{
+  "upstream_root": "${ZHUORUI_UPSTREAM_ROOT}",
+  "upstream_config": "${ZHUORUI_UPSTREAM_CONFIG}",
+  "python_executable": "${ZHUORUI_PYTHON}",
+  "bridge_timeout_seconds": 180,
+  "allow_timed_cancel_fok": false,
+  "allow_synthetic_extended_hours_market": false,
+  "timezone": "America/New_York",
+  "fok_policy": "native",
+  "action_delay_seconds": 0,
+  "lock_timeout_seconds": 30,
+  "trading_enabled": false,
+  "journal_account": ""
+}

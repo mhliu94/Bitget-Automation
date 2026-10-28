@@ -1,0 +1,9 @@
+{
+  "id": "example-limit-001",
+  "account_num_id": 3,
+  "type": "LIMIT_ORDER",
+  "symbol": "AAPL",
+  "side": "buy",
+  "qty_shares": "1",
+  "limit_price": "100.00"
+}

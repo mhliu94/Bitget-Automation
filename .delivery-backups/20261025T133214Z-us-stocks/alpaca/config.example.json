@@ -1,0 +1,20 @@
+{
+  "trading_enabled": false,
+  "journal_account": "",
+  "timezone": "America/New_York",
+  "api_key": "${ALPACA_API_KEY}",
+  "api_secret": "${ALPACA_API_SECRET}",
+  "base_url": "https://paper-api.alpaca.markets",
+  "timeout": 20,
+  "max_pages": 10000,
+  "fok_policy": "native",
+  "action_delay_seconds": 5,
+  "lock_timeout_seconds": 30,
+  "cancel_after_seconds": 1,
+  "cancel_confirmation_delays_seconds": [
+    0,
+    1,
+    1,
+    2
+  ]
+}

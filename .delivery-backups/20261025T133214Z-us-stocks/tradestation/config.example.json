@@ -1,0 +1,22 @@
+{
+  "trading_enabled": false,
+  "journal_account": "",
+  "timezone": "America/New_York",
+  "account_id": "${TRADESTATION_ACCOUNT_ID}",
+  "base_url": "https://sim-api.tradestation.com/v3",
+  "client_id": "${TRADESTATION_CLIENT_ID}",
+  "client_secret": "${TRADESTATION_CLIENT_SECRET}",
+  "refresh_token": "${TRADESTATION_REFRESH_TOKEN}",
+  "timeout": 20,
+  "max_pages": 10000,
+  "fok_policy": "native",
+  "action_delay_seconds": 5,
+  "lock_timeout_seconds": 30,
+  "cancel_after_seconds": 1,
+  "cancel_confirmation_delays_seconds": [
+    0,
+    1,
+    1,
+    2
+  ]
+}

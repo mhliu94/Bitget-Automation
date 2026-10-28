@@ -1,0 +1,8 @@
+{
+  "id": "example-market-001",
+  "account_num_id": 3,
+  "type": "MARKET_ORDER",
+  "symbol": "AAPL",
+  "side": "buy",
+  "qty_shares": "1"
+}

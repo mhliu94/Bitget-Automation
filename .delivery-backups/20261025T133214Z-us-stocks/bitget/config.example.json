@@ -1,0 +1,15 @@
+{
+  "api_key": "${BITGET_API_KEY}",
+  "api_secret": "${BITGET_API_SECRET}",
+  "passphrase": "${BITGET_PASSPHRASE}",
+  "account_type": "stock_plus",
+  "asset_class": "us_equity",
+  "timezone": "America/New_York",
+  "fok_policy": "reject",
+  "action_delay_seconds": 5,
+  "lock_timeout_seconds": 30,
+  "cancel_after_seconds": 1,
+  "cancel_confirmation_delays_seconds": [0, 1, 1, 2],
+  "trading_enabled": false,
+  "journal_account": ""
+}

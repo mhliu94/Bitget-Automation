@@ -1,0 +1,6 @@
+{
+  "id": "example-cancel-001",
+  "account_num_id": 3,
+  "type": "CANCEL_ORDER",
+  "order_id": "EXAMPLE_BROKER_ID"
+}

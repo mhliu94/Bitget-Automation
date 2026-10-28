@@ -1,0 +1,22 @@
+[Unit]
+Description=Bitget Stock+ Kafka listener for BITGET_LYJ (1)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/broker-api-scripts
+UMask=0077
+Environment=PYTHONUNBUFFERED=1
+ExecStartPre=/root/broker-api-scripts/.venv/bin/python /root/broker-api-scripts/bitget/start.py --check
+ExecStart=/root/broker-api-scripts/.venv/bin/python /root/broker-api-scripts/bitget/start.py --execute
+Restart=no
+TimeoutStartSec=180
+TimeoutStopSec=180
+KillSignal=SIGTERM
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,6 @@
+{
+  "id": "example-borrow-001",
+  "account_num_id": 3,
+  "action": "QUERY_BORROW_AVAILABILITY",
+  "symbol": "AAPL"
+}

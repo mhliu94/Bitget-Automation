@@ -1,0 +1,16 @@
+{
+  "checked_date": "2026-10-25",
+  "bootstrap_servers": "45.32.121.19:9092",
+  "topic": "trading-commands",
+  "partitions": [
+    {
+      "partition": 0,
+      "begin": 9238,
+      "end": 9238
+    }
+  ],
+  "snapshot_topics_present": true,
+  "read_only": true,
+  "offsets_committed": false,
+  "records_published": 0
+}

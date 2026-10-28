@@ -1,0 +1,2 @@
+{"topics": ["account-details", "actions", "aggregate-status", "client-requests", "order-status", "price-books", "server-status", "stock-quotes", "trading-commands", "trading-volume"]}
+{"topic": "trading-commands", "partition": 0, "begin": 9238, "end": 9238}

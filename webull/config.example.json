@@ -1,0 +1,25 @@
+{
+  "app_key": "${WEBULL_APP_KEY}",
+  "app_secret": "${WEBULL_APP_SECRET}",
+  "account_id": "${WEBULL_ACCOUNT_ID}",
+  "api_endpoint": "api.webull.com",
+  "region": "us",
+  "journal_account": "webull-us-live-account-1",
+  "timezone": "America/New_York",
+  "timeout": 20,
+  "query_interval": 1.1,
+  "max_query_pages": 10000,
+  "fok_policy": "native",
+  "action_delay_seconds": 5,
+  "lock_timeout_seconds": 30,
+  "cancel_after_seconds": 1,
+  "cancel_confirmation_delays_seconds": [
+    0,
+    1,
+    1,
+    2
+  ],
+  "trading_enabled": false,
+  "asset_class": "us_equity",
+  "market": "US"
+}

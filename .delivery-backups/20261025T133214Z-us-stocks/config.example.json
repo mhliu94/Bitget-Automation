@@ -1,0 +1,183 @@
+{
+  "kafka": {
+    "bootstrap_servers": "45.32.121.19:9092",
+    "command_topic": "trading-commands",
+    "group_prefix": "broker-api-scripts",
+    "auto_offset_reset": "latest",
+    "result_topic": null,
+    "publish_snapshots": true,
+    "account_topic": "account-details",
+    "order_topic": "order-status",
+    "snapshot_interval_seconds": 30,
+    "post_action_delay_seconds": 2
+  },
+  "brokers": {
+    "bitget": {
+      "api_key": "${BITGET_API_KEY}",
+      "api_secret": "${BITGET_API_SECRET}",
+      "passphrase": "${BITGET_PASSPHRASE}",
+      "account_type": "classic_spot",
+      "borrow_scope": "none",
+      "timezone": "UTC",
+      "trading_enabled": false,
+      "journal_account": "",
+      "routing": {
+        "account_id": "ACC-BITGET",
+        "account_num_id": 1
+      },
+      "fok_policy": "native",
+      "action_delay_seconds": 5,
+      "lock_timeout_seconds": 30,
+      "cancel_after_seconds": 1,
+      "cancel_confirmation_delays_seconds": [
+        0,
+        1,
+        1,
+        2
+      ]
+    },
+    "robinhood": {
+      "api_key": "${ROBINHOOD_API_KEY}",
+      "private_key_base64": "${ROBINHOOD_PRIVATE_KEY_BASE64}",
+      "account_number": "${ROBINHOOD_ACCOUNT_NUMBER}",
+      "timezone": "America/New_York",
+      "trading_enabled": false,
+      "journal_account": "",
+      "routing": {
+        "account_id": "ACC-ROBINHOOD",
+        "account_num_id": 2
+      },
+      "fok_policy": "native",
+      "action_delay_seconds": 5,
+      "lock_timeout_seconds": 30,
+      "cancel_after_seconds": 1,
+      "cancel_confirmation_delays_seconds": [
+        0,
+        1,
+        1,
+        2
+      ],
+      "snapshot_cash_basis": "buying_power"
+    },
+    "alpaca": {
+      "trading_enabled": false,
+      "journal_account": "",
+      "timezone": "America/New_York",
+      "api_key": "${ALPACA_API_KEY}",
+      "api_secret": "${ALPACA_API_SECRET}",
+      "base_url": "https://paper-api.alpaca.markets",
+      "timeout": 20,
+      "max_pages": 10000,
+      "routing": {
+        "account_id": "ACC-ALPACA",
+        "account_num_id": 3
+      },
+      "fok_policy": "native",
+      "action_delay_seconds": 5,
+      "lock_timeout_seconds": 30,
+      "cancel_after_seconds": 1,
+      "cancel_confirmation_delays_seconds": [
+        0,
+        1,
+        1,
+        2
+      ]
+    },
+    "tradestation": {
+      "trading_enabled": false,
+      "journal_account": "",
+      "timezone": "America/New_York",
+      "account_id": "${TRADESTATION_ACCOUNT_ID}",
+      "base_url": "https://sim-api.tradestation.com/v3",
+      "client_id": "${TRADESTATION_CLIENT_ID}",
+      "client_secret": "${TRADESTATION_CLIENT_SECRET}",
+      "refresh_token": "${TRADESTATION_REFRESH_TOKEN}",
+      "timeout": 20,
+      "max_pages": 10000,
+      "routing": {
+        "account_id": "ACC-TRADESTATION",
+        "account_num_id": 4
+      },
+      "fok_policy": "native",
+      "action_delay_seconds": 5,
+      "lock_timeout_seconds": 30,
+      "cancel_after_seconds": 1,
+      "cancel_confirmation_delays_seconds": [
+        0,
+        1,
+        1,
+        2
+      ]
+    },
+    "longbridge": {
+      "app_key": "${LONGBRIDGE_APP_KEY}",
+      "app_secret": "${LONGBRIDGE_APP_SECRET}",
+      "access_token": "${LONGBRIDGE_ACCESS_TOKEN}",
+      "http_url": "https://openapi.longbridge.com",
+      "data_center": "ap",
+      "journal_account": "",
+      "timezone": "America/New_York",
+      "timeout": 20,
+      "trading_enabled": false,
+      "routing": {
+        "account_id": "ACC-LONGBRIDGE",
+        "account_num_id": 5
+      },
+      "fok_policy": "native",
+      "action_delay_seconds": 5,
+      "lock_timeout_seconds": 30,
+      "cancel_after_seconds": 1,
+      "cancel_confirmation_delays_seconds": [
+        0,
+        1,
+        1,
+        2
+      ]
+    },
+    "webull": {
+      "app_key": "${WEBULL_APP_KEY}",
+      "app_secret": "${WEBULL_APP_SECRET}",
+      "account_id": "${WEBULL_ACCOUNT_ID}",
+      "api_endpoint": "api.webull.com",
+      "region": "us",
+      "journal_account": "",
+      "timezone": "America/New_York",
+      "timeout": 20,
+      "query_interval": 1.1,
+      "max_query_pages": 10000,
+      "trading_enabled": false,
+      "routing": {
+        "account_id": "ACC-WEBULL",
+        "account_num_id": 6
+      },
+      "fok_policy": "native",
+      "action_delay_seconds": 5,
+      "lock_timeout_seconds": 30,
+      "cancel_after_seconds": 1,
+      "cancel_confirmation_delays_seconds": [
+        0,
+        1,
+        1,
+        2
+      ]
+    },
+    "zhuorui": {
+      "upstream_root": "${ZHUORUI_UPSTREAM_ROOT}",
+      "upstream_config": "${ZHUORUI_UPSTREAM_CONFIG}",
+      "python_executable": "${ZHUORUI_PYTHON}",
+      "bridge_timeout_seconds": 180,
+      "allow_timed_cancel_fok": false,
+      "allow_synthetic_extended_hours_market": false,
+      "timezone": "America/New_York",
+      "trading_enabled": false,
+      "journal_account": "",
+      "routing": {
+        "account_id": "ACC-ZHUORUI",
+        "account_num_id": 7
+      },
+      "fok_policy": "native",
+      "action_delay_seconds": 0,
+      "lock_timeout_seconds": 30
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "id": "example-luld-001",
+  "account_num_id": 3,
+  "type": "LIMIT_ORDER",
+  "symbol": "AAPL",
+  "side": "buy",
+  "qty_shares": "1",
+  "limit_price": "100.00",
+  "time_in_force": "day",
+  "asset_class": "us_equity",
+  "auction_intent": "luld_reopening"
+}

@@ -1,0 +1,6 @@
+{
+  "id": "example-disable-001",
+  "account_num_id": 3,
+  "type": "SET_TRADING_ENABLED",
+  "trading_enabled": false
+}

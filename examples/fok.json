@@ -1,0 +1,9 @@
+{
+  "id": "example-fok-001",
+  "account_num_id": 3,
+  "type": "LIMIT_ORDER_FOK",
+  "symbol": "AAPL",
+  "side": "buy",
+  "qty_shares": "1",
+  "limit_price": "100.00"
+}

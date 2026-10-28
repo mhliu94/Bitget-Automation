@@ -1,0 +1,23 @@
+{
+  "app_key": "${LONGBRIDGE_APP_KEY}",
+  "app_secret": "${LONGBRIDGE_APP_SECRET}",
+  "access_token": "${LONGBRIDGE_ACCESS_TOKEN}",
+  "http_url": "https://openapi.longbridge.com",
+  "data_center": "ap",
+  "journal_account": "longbridge-ap-live-account-1",
+  "timezone": "America/New_York",
+  "timeout": 20,
+  "fok_policy": "native",
+  "action_delay_seconds": 5,
+  "lock_timeout_seconds": 30,
+  "cancel_after_seconds": 1,
+  "cancel_confirmation_delays_seconds": [
+    0,
+    1,
+    1,
+    2
+  ],
+  "trading_enabled": false,
+  "asset_class": "us_equity",
+  "market": "US"
+}

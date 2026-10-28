@@ -1,0 +1,5 @@
+{
+  "id": "example-capabilities-001",
+  "account_num_id": 3,
+  "action": "GET_CAPABILITIES"
+}
