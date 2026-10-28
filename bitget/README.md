@@ -22,31 +22,84 @@ Transport uses the documented Bitget HMAC headers and signed JSON POST bodies. T
 
 Official sources checked 2026-10-25: [Stock+ orders](https://www.bitget.com/docs/catalog/stock-plus/orders), [Stock+ assets](https://www.bitget.com/docs/catalog/stock-plus/assets), [Stock+ instrument/quotes](https://www.bitget.com/docs/catalog/stock-plus/stock-quotes), [REST authentication](https://www.bitget.com/docs/uta/rest-api), [stock short-selling announcement](https://www.bitget.com/support/articles/12560603892050).
 
-## BITGET_LYJ deployment
+## Five accounts on separate servers
 
-The local `config.json` routes account `BITGET_LYJ`, numeric ID `1`, through
-Kafka `45.32.121.19:9092`. Commands use `trading-commands`; snapshots use
-`account-details` and `order-status`. The configuration enables live trading,
-uses `latest` for a new consumer group, and preserves the journal identity
-`BITGET_LYJ-stock-plus-live`. Keep `.state/` across restarts.
+Run one Bitget worker per account, with that account's credentials and routing on
+its own server. All five workers subscribe to `trading-commands` on
+`45.32.121.19:9092`, each using an independent consumer group. Separate IP
+addresses do not create separate Kafka subscriptions: consumers in the same
+group share partitions, so one account can otherwise miss its commands.
 
-`bitget/start.py` loads `client_id`, `client_secret`, and `passphrase` from
-`/root/bitget-configs/config.properties` into the API environment variables.
-Credentials stay out of `config.json` and command-line arguments.
+Each server has its own `/root/bitget-configs/config.properties` and private
+`config.json`. Start from the repository's `config.example.json`, then set the
+local configuration from these properties:
+
+| Properties entry | Local setting |
+| --- | --- |
+| `client_id` | Loaded into `BITGET_API_KEY` at startup |
+| `client_secret` | Loaded into `BITGET_API_SECRET` at startup |
+| `passphrase` | Loaded into `BITGET_PASSPHRASE` at startup |
+| `string_id` | `brokers.bitget.routing.account_id` |
+| `numerical_id` | `brokers.bitget.routing.account_num_id`, as a positive JSON integer |
+| `kafka_ip` | `kafka.bootstrap_servers` |
+
+Keep the credential environment references from the example; credentials stay
+out of `config.json`, command-line arguments, and Git. `bitget/start.py` checks
+any supplied routing/Kafka properties against `config.json` before connecting,
+and rejects mismatches. Older files containing only credentials remain supported.
+Give every account a distinct `string_id` and `numerical_id`; command producers
+must use those same account selectors.
+
+This server's account is `BITGET_DENGLEI`, numeric ID `2`. Its local configuration
+uses `trading_enabled:true` and `journal_account:"BITGET_DENGLEI-stock-plus-live"`.
+`BITGET_LYJ`, numeric ID `1`, belongs to a different server and account. Configure
+the other three servers from their own properties rather than copying either
+account's identity. Give each real account its own permanent `journal_account`
+and preserve that label and `.state/` across restarts and credential rotation.
+
+The group format for numeric accounts is:
+
+```text
+<group_prefix>.bitget.<account_id>.<server_id-or-default>.<live-or-preview>.<account_num_id>
+broker-api-scripts.bitget.BITGET_LYJ.default.live.1
+broker-api-scripts.bitget.BITGET_DENGLEI.default.live.2
+```
+
+Each group receives the complete command stream and executes only commands
+matching its account selectors. For this server, target `account_num_id:2` or
+`account_id:"BITGET_DENGLEI"`; if both are supplied, both must match. To trade on
+all five accounts, publish one account-addressed command per account. Account
+and order snapshots use `account-details` and `order-status` with the same
+account identifiers.
+
+Appending the numeric ID changes the Kafka group for existing deployments.
+A new group starts at `latest` by default and does not inherit the old group's
+offsets. When upgrading an existing worker, stop it first and migrate its
+committed offsets if queued commands must be preserved. Keep its original
+journals. An older worker on another account can keep its existing group;
+it remains independent of this server's new group. Accounts without numeric IDs
+retain the previous group format.
+
+After creating the Python environment and installing `requirements.txt`, use
+the same generic service on each server:
 
 ```bash
 cd /root/broker-api-scripts
 .venv/bin/python bitget/start.py --check
-systemctl start bitget-lyj
-systemctl status bitget-lyj --no-pager
-journalctl -u bitget-lyj -n 50 --no-pager
-systemctl stop bitget-lyj
+install -m 0644 deploy/bitget.service /etc/systemd/system/bitget.service
+systemctl daemon-reload
+systemctl start bitget
+systemctl status bitget --no-pager
+journalctl -u bitget -n 50 --no-pager
+# To stop after the current operation:
+systemctl stop bitget
 ```
 
-The service definition is `deploy/bitget-lyj.service`. It runs read-only Kafka,
-account, order, and instrument checks before starting the consumer. It does not
-automatically restart after an authentication or reconciliation failure and is
-not enabled at boot. A graceful stop permits the current operation to finish.
+The service runs read-only Kafka, account, order, and instrument checks before
+starting the consumer. It does not automatically restart after an authentication
+or reconciliation failure and is not enabled at boot. The older
+`deploy/bitget-lyj.service` is a legacy unit name; stop that unit before replacing
+it with `bitget.service` on the same server. Use only one unit per local account.
 
 Bitget error `40084` means the supplied account is in Classic Account mode and
 the requested API requires Unified Account access. Resolve account eligibility

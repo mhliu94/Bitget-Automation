@@ -27,6 +27,32 @@ def load_credentials(path):
         if not value:
             raise ConfigurationError(f"Credentials file requires {field}")
         os.environ[variable] = value
+    return {key: properties["credentials"][key].strip()
+            for key in ("string_id", "numerical_id", "kafka_ip")
+            if key in properties["credentials"]}
+
+
+def validate_deployment(config_path, deployment):
+    """Reject copied routing settings that disagree with the credential file."""
+    config, selected = load_config(config_path, "bitget", execute=True)
+    routing = selected.get("routing", {})
+    if "string_id" in deployment:
+        if not deployment["string_id"] or routing.get("account_id") != deployment["string_id"]:
+            raise ConfigurationError("routing.account_id must match credentials string_id")
+    if "numerical_id" in deployment:
+        numeric = deployment["numerical_id"]
+        if not numeric.isdigit() or int(numeric) <= 0:
+            raise ConfigurationError("Credentials numerical_id must be a positive integer")
+        configured = routing.get("account_num_id")
+        if type(configured) is not int or configured != int(numeric):
+            raise ConfigurationError("routing.account_num_id must match credentials numerical_id")
+    if "kafka_ip" in deployment:
+        expected = [host.strip() for host in deployment["kafka_ip"].split(",")]
+        configured = resolve_env(config.get("kafka", {})).get("bootstrap_servers")
+        if isinstance(configured, str):
+            configured = [host.strip() for host in configured.split(",")]
+        if not all(expected) or configured != expected:
+            raise ConfigurationError("kafka.bootstrap_servers must match credentials kafka_ip")
 
 
 def check(config_path):
@@ -44,7 +70,7 @@ def check(config_path):
     consumer = KafkaConsumer(
         bootstrap_servers=settings["bootstrap_servers"], group_id=None,
         enable_auto_commit=False, allow_auto_create_topics=False,
-        client_id="bitget-lyj-preflight", **connection,
+        client_id="bitget-preflight", **connection,
     )
     try:
         required = {settings["command_topic"], settings["account_topic"], settings["order_topic"]}
@@ -78,7 +104,8 @@ def main():
         parser.error("Choose --check or --execute")
     os.umask(0o077)
     try:
-        load_credentials(args.credentials)
+        deployment = load_credentials(args.credentials)
+        validate_deployment(args.config, deployment)
         if args.check:
             check(args.config)
             return 0

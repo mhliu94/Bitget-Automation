@@ -133,6 +133,30 @@ class IntegrationReviewTests(unittest.TestCase):
         groups = [call.kwargs["group_id"] for call in kafka.KafkaConsumer.call_args_list]
         self.assertEqual(len(set(groups)), 2)
 
+    def test_five_numeric_accounts_receive_independent_live_and_preview_groups(self):
+        kafka, structs, consumer = fake_kafka()
+        with patch.dict("sys.modules", {"kafka": kafka, "kafka.structs": structs}), redirect_stdout(io.StringIO()):
+            for execute in (False, True):
+                for numeric in range(1, 6):
+                    runner = Mock(broker="bitget", execute=execute)
+                    # A repeated account label must not merge numeric account groups.
+                    runner.config = {"routing": {"account_id": "BITGET", "account_num_id": numeric}}
+                    runner.process.return_value = {"status": "ignored"}
+                    consume(runner, {"kafka": {"publish_snapshots": False}}, max_messages=1)
+        groups = [call.kwargs["group_id"] for call in kafka.KafkaConsumer.call_args_list]
+        self.assertEqual(len(set(groups)), 10)
+        self.assertEqual({group.rsplit(".", 1)[1] for group in groups}, {"1", "2", "3", "4", "5"})
+
+    def test_accounts_without_numeric_id_keep_existing_group(self):
+        kafka, structs, consumer = fake_kafka()
+        runner = Mock(broker="bitget", execute=False)
+        runner.config = {"routing": {"account_id": "account"}}
+        runner.process.return_value = {"status": "ignored"}
+        with patch.dict("sys.modules", {"kafka": kafka, "kafka.structs": structs}), redirect_stdout(io.StringIO()):
+            consume(runner, {"kafka": {}}, max_messages=1)
+        self.assertEqual(kafka.KafkaConsumer.call_args.kwargs["group_id"],
+                         "broker-api-scripts.bitget.account.default.preview")
+
     def test_consumer_commits_only_the_processed_record(self):
         kafka, structs, consumer = fake_kafka()
         runner = Mock(broker="alpaca", execute=False)

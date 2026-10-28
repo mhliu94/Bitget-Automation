@@ -30,6 +30,11 @@ def _consume(runner, config, max_messages=0):
     base_group = settings.get("group_prefix", "broker-api-scripts")
     server = str(routing.get("server_id") or "default")
     group = f"{base_group}.{runner.broker}.{account}.{server}.{mode}"
+    numeric = routing.get("account_num_id")
+    if numeric is not None:
+        if isinstance(numeric, bool) or not str(numeric).isdigit() or int(numeric) <= 0:
+            raise ConfigurationError("routing.account_num_id must be a positive integer")
+        group += f".{int(numeric)}"
     connection = {key: settings[key] for key in ("security_protocol", "sasl_mechanism", "sasl_plain_username", "sasl_plain_password", "ssl_cafile", "ssl_certfile", "ssl_keyfile") if settings.get(key)}
     bootstrap = settings.get("bootstrap_servers", "45.32.121.19:9092")
     topic = settings.get("command_topic", "trading-commands")

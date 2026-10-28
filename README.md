@@ -33,6 +33,15 @@ Fill only the broker entries you use. `${ENV_VARIABLE}` values resolve from the 
 
 Set application `routing.account_id`/`account_num_id` to your Kafka producer's account labels. Broker account IDs remain separate broker-specific fields. Set `journal_account` to a permanent label identifying the exact account, product and paper/live environment. Preserve that label and `.state/` across restarts and credential rotation. The old crypto products must not reuse the same journal identity as the new Stock+/Robinhood stock accounts.
 
+For the five Bitget accounts on separate servers, use each server's own
+`~/bitget-configs/config.properties`: `string_id` and `numerical_id` must match
+the local routing, and `kafka_ip` must match the Kafka bootstrap address.
+Each account receives the command topic through its own group, ending in its
+numeric account ID; different IP addresses alone do not provide this isolation.
+This server runs `BITGET_DENGLEI` (`2`), while `BITGET_LYJ` (`1`) is a different
+account. See [Bitget deployment](bitget/README.md#five-accounts-on-separate-servers)
+for all five servers' setup, group naming, and upgrade instructions.
+
 All examples default to offline preview. `--execute` performs broker reads or mutations; submissions also require local `trading_enabled:true`. The delivered config disables submissions.
 
 ```bash
@@ -76,6 +85,6 @@ Live workers publish `account-details` and KTrader v1 `order-status` snapshots a
 .venv/bin/python tools/journal.py --broker alpaca
 ```
 
-Add `--execute` deliberately to perform mutation/recovery commands. [Runtime operations](docs/runtime.md) explain process control, persistent state, startup recovery and authentication boundaries. No worker or service was started as part of this delivery.
+Add `--execute` deliberately to perform mutation/recovery commands. [Runtime operations](docs/runtime.md) explain process control, persistent state, startup recovery and authentication boundaries. Installing the repository alone does not start a worker; the Bitget deployment instructions describe the explicitly started service.
 
 [Verification evidence](docs/verification.md) records the tests and their limits. Public API documentation and mocked contract tests were checked; authenticated order acceptance, account permissions, fills and auction routing remain untested without your actual account connection. No trades were placed. The last read-only Kafka inspection found both snapshot topics present and `trading-commands` empty at partition 0 (`begin=end=9238`); the legacy command shape follows the supplied reference repositories.
